@@ -14,6 +14,7 @@ class Application(tk.Frame):
         self.gradoMenor()
         self.gradoMayor()
         self.ciclos()
+        self.entradaCamino()
 
     def entradaVertices(self):
         self.text=tk.Label(self)
@@ -64,6 +65,21 @@ class Application(tk.Frame):
         self.boton["text"]="Ciclos"
         self.boton["command"] = self.f_ciclos
         self.boton.pack(side="top")
+
+    def entradaCamino(self):
+        self.text=tk.Label(self)
+        self.text["text"]= "Camino"
+        self.text.pack(side="top")
+
+        self.entrada = tk.Entry(self)
+        self.entrada.pack(side="top")
+        self.cam = tk.StringVar()
+        self.entrada["textvariable"] = self.cam
+
+        self.botton= tk.Button(self)
+        self.botton["text"] = "Buscar el camino"
+        self.botton["command"] = self.f_camino
+        self.botton.pack(side="top")
  
 
     def f_ciclos(self):
@@ -178,6 +194,60 @@ class Application(tk.Frame):
         nx.draw(G,node_color="g",with_labels=True,font_color="w")
         plt.show()
 
+    def f_camino(self):
+        self.cami = self.cam.get().split(sep=" ")
+        self.vertice = self.v.get().split(sep=",")
+        
+        self.arista = self.e.get().replace(')','')
+        self.arista = self.arista.replace('(','').split(sep=" ")
+
+        self.aristas = []
+        self.vertices = []
+        self.camin = []
+
+        for i in self.cami:
+            self.camin.append(int(i))
+
+        for i in self.vertice:
+            self.vertices.append(int(i))
+
+        for i in self.arista:
+            self.temp = []
+            self.temp.append(int(i[0]))
+            self.temp.append(int(i[2]))
+            self.aristas.append(self.temp)
+
+        G = nx.Graph()
+        G.add_nodes_from(self.vertices)
+
+        for i in self.aristas:
+            G.add_edge(i[0],i[1])
+        
+        self.pa = []
+        for path in nx.all_simple_paths(G, source=self.camin[0], target=self.camin[1]):
+            self.pa.append(path)
+            print(path)
+        print()
+
+        self.corto = 1000
+        for i in self.pa:
+            if len(i) < self.corto:
+                self.corto = len(i)
+                self.camCorto = i
+        
+        K = nx.Graph()
+        K.add_nodes_from(self.camCorto)
+
+        for i in range(len(self.camCorto)-1):
+            if i == len(self.camCorto):
+                break
+            else:
+                K.add_edge(self.camCorto[i], self.camCorto[i+1])
+
+        nx.draw(K,node_color="g",with_labels=True,font_color="w")
+        plt.show()
+        
+
     def f_printMatriz(self):
         self.m = self.f_matrix()
 
@@ -185,6 +255,7 @@ class Application(tk.Frame):
             for j in range(len(self.m)):
                 print(self.m[i][j], end=''+" ")
             print()
+        print()
 
 
     def f_matrix(self):
