@@ -10,14 +10,26 @@ class Application(tk.Frame):
         self.entradaVertices()
         self.entradaAristas()
         self.dibujarGrafo()
-        
+        self.gradoGrafo()
+        self.gradoMenor()
+        self.gradoMayor()
+        self.ciclos()
+
     def entradaVertices(self):
+        self.text=tk.Label(self)
+        self.text["text"]= "Vertices"
+        self.text.pack(side="top")
+
         self.entrada = tk.Entry(self)
         self.entrada.pack(side="top")
         self.v = tk.StringVar()
         self.entrada["textvariable"] = self.v
     
     def entradaAristas(self):
+        self.text=tk.Label(self)
+        self.text["text"]="Aristas"
+        self.text.pack(side="top")
+
         self.entrada1 = tk.Entry(self)
         self.entrada1.pack(side="top")
         self.e = tk.StringVar()
@@ -27,7 +39,119 @@ class Application(tk.Frame):
         self.botton= tk.Button(self)
         self.botton["text"] = "Dibujar Grafo"
         self.botton["command"] = self.f_dibujar
-        self.botton.pack(side="left")
+        self.botton.pack(side="top")
+
+    def gradoGrafo(self):
+        self.boton=tk.Button(self)
+        self.boton["text"]="Grado del Grafo"
+        self.boton["command"] = self.f_gradoGrafo
+        self.boton.pack(side="top")
+
+    def gradoMenor(self):
+        self.boton=tk.Button(self)
+        self.boton["text"]="Grado menor"
+        self.boton["command"] = self.f_gradoMenor
+        self.boton.pack(side="top")
+
+    def gradoMayor(self):
+        self.boton=tk.Button(self)
+        self.boton["text"]="Grado mayor"
+        self.boton["command"] = self.f_gradoMayor
+        self.boton.pack(side="top")
+    
+    def ciclos(self):
+        self.boton=tk.Button(self)
+        self.boton["text"]="Ciclos"
+        self.boton["command"] = self.f_ciclos
+        self.boton.pack(side="top")
+ 
+
+    def f_ciclos(self):
+        self.arista = self.e.get().replace(')','')
+        self.arista = self.arista.replace('(','').split(sep=" ")
+
+        self.aristas = []
+
+        for i in self.arista:
+            self.temp = []
+            self.temp.append(int(i[0]))
+            self.temp.append(int(i[2]))
+            self.aristas.append(self.temp)
+
+        G = nx.DiGraph(self.aristas)
+        self.string = ""
+
+        if len(list(nx.simple_cycles(G))) == 0:
+            string="No hay ciclos"
+        else:
+            string="Si hay ciclos"
+
+        self.text=tk.Label(self)
+        self.text["text"]= string
+        self.text.pack(side="bottom")
+
+
+    def f_gradoMayor(self):
+        self.m = self.f_matrix()
+        self.pos = 0
+        self.acum = 0
+        self.cont = 0
+
+        for i in self.m:
+            self.temp = 0
+            for j in i:
+                if j == "1":
+                    self.temp += 1
+
+            if self.temp > self.acum:
+                self.pos = self.cont + 1
+                self.acum = self.temp
+            self.cont += 1
+
+        string = "El vertice con mayor grado: " + str(self.pos)
+
+        self.text=tk.Label(self)
+        self.text["text"]= string
+        self.text.pack(side="bottom") 
+
+    def f_gradoMenor(self):
+        self.m = self.f_matrix()
+        self.pos = 0
+        self.acum = 1000
+        self.cont = 0
+
+        for i in self.m:
+            self.temp = 0
+            for j in i:
+                if j == "1":
+                    self.temp += 1
+
+            if self.temp <= self.acum:
+                self.pos = self.cont + 1
+                self.acum = self.temp
+            self.cont += 1
+
+        string = "El vertice con menor grado: " + str(self.pos)
+
+        self.text=tk.Label(self)
+        self.text["text"]= string
+        self.text.pack(side="bottom")
+
+
+
+    def f_gradoGrafo(self):
+        self.m = self.f_matrix()
+        self.cont = 0
+
+        for i in self.m:
+            for j in i:
+                if j == "1":
+                    self.cont += 1
+        string = "El grado del grafo es de: " + str(self.cont)
+
+        self.text=tk.Label(self)
+        self.text["text"]= string
+        self.text.pack(side="bottom")
 
     def f_dibujar(self):
         self.vertice = self.v.get().split(sep=",")
@@ -45,12 +169,23 @@ class Application(tk.Frame):
 
         G = nx.Graph()
         G.add_nodes_from(self.vertice)
-        
+
         for i in self.aristas:
             G.add_edge(i[0],i[1])
 
-        nx.draw(G, with_labels=True)
+        self.f_printMatriz()
+
+        nx.draw(G,node_color="g",with_labels=True,font_color="w")
         plt.show()
+
+    def f_printMatriz(self):
+        self.m = self.f_matrix()
+
+        for i in range(len(self.m)):
+            for j in range(len(self.m)):
+                print(self.m[i][j], end=''+" ")
+            print()
+
 
     def f_matrix(self):
         self.vertice = self.v.get().split(sep=",")
@@ -93,10 +228,7 @@ class Application(tk.Frame):
         
             self.matriz.append(self.row)
 
-        for i in range(len(self.vertice)):
-            for j in range(len(self.vertice)):
-                print(self.matriz[i][j], end=''+" ")
-            print()
+        return(self.matriz)
 
 root = tk.Tk()
 app = Application(master=root)
